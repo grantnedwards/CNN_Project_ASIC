@@ -31,11 +31,11 @@ always@(posedge clock)
 
     result3= ~(input_m[4]^weight_m[0]) + ~(input_m[5]^weight_m[1] + ~(input_m[6]^weight_m[2])
            + ~(input_m[8]^weight_m[3]) + ~(input_m[9]^weight_m[4] + ~(input_m[10]^weight_m[5])
-           + ~(input_m[11]^weight_m[6]) + ~(input_m[12]^weight_m[7] + ~(input_m[13]^weight_m[8]);
+           + ~(input_m[12]^weight_m[6]) + ~(input_m[13]^weight_m[7] + ~(input_m[14]^weight_m[8]);
 
-    result4= ~(input_m[0]^weight_m[0]) + ~(input_m[1]^weight_m[1] + ~(input_m[2]^weight_m[2])
-           + ~(input_m[0]^weight_m[0]) + ~(input_m[1]^weight_m[1] + ~(input_m[2]^weight_m[2])
-           + ~(input_m[0]^weight_m[0]) + ~(input_m[1]^weight_m[1] + ~(input_m[2]^weight_m[2]);
+    result4= ~(input_m[5]^weight_m[0]) + ~(input_m[6]^weight_m[1] + ~(input_m[7]^weight_m[2])
+           + ~(input_m[9]^weight_m[3]) + ~(input_m[10]^weight_m[4] + ~(input_m[11]^weight_m[5])
+           + ~(input_m[13]^weight_m[6]) + ~(input_m[14]^weight_m[7] + ~(input_m[15]^weight_m[8]);
 
     // flip values and shove into SRAM
     // Write into output SRAM
