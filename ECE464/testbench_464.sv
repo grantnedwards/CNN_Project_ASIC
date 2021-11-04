@@ -1,5 +1,3 @@
-`include "sram.sv"
-`include "mydesign.v"
 module tb_top();
 
 

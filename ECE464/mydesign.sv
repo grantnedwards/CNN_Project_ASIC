@@ -50,8 +50,8 @@ always @(posedge clk)
             dut_sram_write_address <= 12'b0;
             dut_sram_write_data <= 16'b0;
 
-            dut_wmem_read_address <= 0;
-            dut_sram_read_address <= 0;
+            dut_wmem_read_address = 0;
+            dut_sram_read_address = 0;
         end
     else
         begin
@@ -67,45 +67,45 @@ always @(dut_busy)
     input_m = sram_dut_read_data;
     weight_m = wmem_dut_read_data;
 
-    result1 = ~(input_m[0]^weight_m[0]) + ~(input_m[1]^weight_m[1]) + ~(input_m[2]^weight_m[2])
-           + ~(input_m[4]^weight_m[3]) + ~(input_m[5]^weight_m[4]) + ~(input_m[6]^weight_m[5])
-           + ~(input_m[8]^weight_m[6]) + ~(input_m[9]^weight_m[7]) + ~(input_m[10]^weight_m[8]);
-
-    result2 = ~(input_m[1]^weight_m[0]) + ~(input_m[2]^weight_m[1]) + ~(input_m[3]^weight_m[2])
-           + ~(input_m[5]^weight_m[3]) + ~(input_m[6]^weight_m[4]) + ~(input_m[7]^weight_m[5])
-           + ~(input_m[9]^weight_m[6]) + ~(input_m[10]^weight_m[7]) + ~(input_m[11]^weight_m[8]);
-
-    result3 = ~(input_m[4]^weight_m[0]) + ~(input_m[5]^weight_m[1]) + ~(input_m[6]^weight_m[2])
-           + ~(input_m[8]^weight_m[3]) + ~(input_m[9]^weight_m[4]) + ~(input_m[10]^weight_m[5])
-           + ~(input_m[12]^weight_m[6]) + ~(input_m[13]^weight_m[7]) + ~(input_m[14]^weight_m[8]);
-
-    result4 = ~(input_m[5]^weight_m[0]) + ~(input_m[6]^weight_m[1]) + ~(input_m[7]^weight_m[2])
-           + ~(input_m[9]^weight_m[3]) + ~(input_m[10]^weight_m[4]) + ~(input_m[11]^weight_m[5])
-           + ~(input_m[13]^weight_m[6]) + ~(input_m[14]^weight_m[7]) + ~(input_m[15]^weight_m[8]);
-
-    if(result1>=5)
-        result1 = 1'b1;
-    else
-        result1 = 1'b0;
-
-    if(result2>=5)
-        result2 = 1'b1;
-    else
-        result2 = 1'b0;
-
-    if(result3>=5)
-        result3 = 1'b1;
-    else
-        result3 = 1'b0;
-
-    if(result4>=5)
-        result4 = 1'b1;
-    else
-        result4 = 1'b0;
-
-    dut_sram_write_enable = 1'b1;
-    dut_sram_write_address = 1'b0;
-    dut_sram_write_data = {12'b0, result1, result2, result3, result4};
-	dut_busy = 0;
+    // result1 = ~((input_m[0]^weight_m[0]) + (input_m[1]^weight_m[1]) + (input_m[2]^weight_m[2])
+    //        + (input_m[4]^weight_m[3]) + (input_m[5]^weight_m[4]) + (input_m[6]^weight_m[5])
+    //        + (input_m[8]^weight_m[6]) + (input_m[9]^weight_m[7]) + (input_m[10]^weight_m[8]));
+    //
+    // result2 = ~((input_m[1]^weight_m[0]) + (input_m[2]^weight_m[1]) + (input_m[3]^weight_m[2])
+    //        + (input_m[5]^weight_m[3]) + (input_m[6]^weight_m[4]) + (input_m[7]^weight_m[5])
+    //        + (input_m[9]^weight_m[6]) + (input_m[10]^weight_m[7]) + (input_m[11]^weight_m[8]));
+    //
+    // result3 = ~((input_m[4]^weight_m[0]) + (input_m[5]^weight_m[1]) + (input_m[6]^weight_m[2])
+    //        + (input_m[8]^weight_m[3]) + (input_m[9]^weight_m[4]) + (input_m[10]^weight_m[5])
+    //        + (input_m[12]^weight_m[6]) + (input_m[13]^weight_m[7]) + (input_m[14]^weight_m[8]));
+    //
+    // result4 = ~((input_m[5]^weight_m[0]) + (input_m[6]^weight_m[1]) + (input_m[7]^weight_m[2])
+    //        + (input_m[9]^weight_m[3]) + (input_m[10]^weight_m[4]) + (input_m[11]^weight_m[5])
+    //        + (input_m[13]^weight_m[6]) + (input_m[14]^weight_m[7]) + (input_m[15]^weight_m[8]));
+    //
+    // if(result1>=5)
+    //     result1 = 1'b1;
+    // else
+    //     result1 = 1'b0;
+    //
+    // if(result2>=5)
+    //     result2 = 1'b1;
+    // else
+    //     result2 = 1'b0;
+    //
+    // if(result3>=5)
+    //     result3 = 1'b1;
+    // else
+    //     result3 = 1'b0;
+    //
+    // if(result4>=5)
+    //     result4 = 1'b1;
+    // else
+    //     result4 = 1'b0;
+    //
+    // dut_sram_write_enable = 1'b1;
+    // dut_sram_write_address = 1'b0;
+    // dut_sram_write_data = {12'b0, result1, result2, result3, result4};
+	// dut_busy = 0;
     end
 endmodule
