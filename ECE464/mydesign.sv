@@ -1,111 +1,113 @@
 module MyDesign (dut_run,
-                dut_busy,
-                reset_b,
-                clk,
-                dut_sram_write_address,
-                dut_sram_write_data,
-                dut_sram_write_enable,
-                dut_sram_read_address,
-                sram_dut_read_data,
-                dut_wmem_read_address,
-                wmem_dut_read_data
-                );
+    dut_busy,
+    reset_b,
+    clk,
+    dut_sram_write_address,
+    dut_sram_write_data,
+    dut_sram_write_enable,
+    dut_sram_read_address,
+    sram_dut_read_data,
+    dut_wmem_read_address,
+    wmem_dut_read_data
+);
+    input dut_run;
+    output reg dut_busy;
+    input reset_b;
+    input clk;
 
-//======================================================================//
+    output reg [11:0] dut_sram_write_address;
+    output reg [15:0] dut_sram_write_data;
+    output reg dut_sram_write_enable;
 
-input dut_run;
-output reg dut_busy;
-input reset_b;
-input clk;
+    input reg [11:0] dut_sram_read_address;
+    input reg [11:0] dut_wmem_read_address;
 
-output reg [11:0] dut_sram_write_address;
-output reg [15:0] dut_sram_write_data;
-output reg dut_sram_write_enable;
+    input [15:0] sram_dut_read_data;
+    input [15:0] wmem_dut_read_data;
 
-input reg [11:0] dut_sram_read_address;
-input reg [11:0] dut_wmem_read_address;
+    reg [15:0] input_m;
+    reg [15:0] weight_m;
+    reg result1;
+    reg result2;
+    reg result3;
+    reg result4;
 
-input [15:0] sram_dut_read_data;
-input [15:0] wmem_dut_read_data;
-
-reg [15:0] input_m;
-reg [15:0] weight_m;
-reg result1;
-reg result2;
-reg result3;
-reg result4;
-
-
+    reg [1:0] state;
+    reg [1:0] next;
 
 
-
-//======================================================================//
-
-always @(posedge clk)
-    begin
-    if(!reset_b)
+    always @(posedge clk, posedge reset_b)
         begin
-            dut_busy <= 0;
-            dut_sram_write_enable <= 1'b0;
-            dut_sram_write_address <= 12'b0;
-            dut_sram_write_data <= 16'b0;
-
-            dut_wmem_read_address <= 0;
-            dut_sram_read_address <= 0;
-        end
-    else
-        begin
-            if(dut_run)
-                begin
-                dut_busy <=1;
+            if(!reset_b) begin
+                dut_busy <= 0;
+                state <= 2'b00;
                 end
+            else state <= next;
         end
-    end
 
-always @(dut_busy)
-    begin
-    input_m = sram_dut_read_data;
-    weight_m = wmem_dut_read_data;
+    always @(state, dut_busy)
+        begin
+            next = state;
+            case(state)
+                2'b00 : begin
+                    dut_sram_write_enable <= 0;
+                    dut_sram_write_address <= 0;
+                    dut_sram_write_data <= 0;
+                    dut_wmem_read_address <= 0;
+                    dut_sram_read_address <= 0;
+                    input_m <= sram_dut_read_data;
+                    weight_m <= wmem_dut_read_data;
+                    next <= 2'b01;
+                        end
+                2'b01 : begin
+                    result1 = {~(input_m[0]^weight_m[0])} + {~(input_m[1]^weight_m[1])} + {~(input_m[2]^weight_m[2])}
+                        + ~(input_m[4]^weight_m[3]) + ~(input_m[5]^weight_m[4]) + ~(input_m[6]^weight_m[5])
+                        + ~(input_m[8]^weight_m[6]) + ~(input_m[9]^weight_m[7]) + ~(input_m[10]^weight_m[8]);
 
-    result1 = ~(input_m[0]^weight_m[0]) + ~(input_m[1]^weight_m[1]) + ~(input_m[2]^weight_m[2])
-           + ~(input_m[4]^weight_m[3]) + ~(input_m[5]^weight_m[4]) + ~(input_m[6]^weight_m[5])
-           + ~(input_m[8]^weight_m[6]) + ~(input_m[9]^weight_m[7]) + ~(input_m[10]^weight_m[8]);
+                    result2 = ~(input_m[1]^weight_m[0]) + ~(input_m[2]^weight_m[1]) + ~(input_m[3]^weight_m[2])
+                        + ~(input_m[5]^weight_m[3]) + ~(input_m[6]^weight_m[4]) + ~(input_m[7]^weight_m[5])
+                        + ~(input_m[9]^weight_m[6]) + ~(input_m[10]^weight_m[7]) + ~(input_m[11]^weight_m[8]);
 
-    result2 = ~(input_m[1]^weight_m[0]) + ~(input_m[2]^weight_m[1]) + ~(input_m[3]^weight_m[2])
-           + ~(input_m[5]^weight_m[3]) + ~(input_m[6]^weight_m[4]) + ~(input_m[7]^weight_m[5])
-           + ~(input_m[9]^weight_m[6]) + ~(input_m[10]^weight_m[7]) + ~(input_m[11]^weight_m[8]);
+                    result3 = ~(input_m[4]^weight_m[0]) + ~(input_m[5]^weight_m[1]) + ~(input_m[6]^weight_m[2])
+                        + ~(input_m[8]^weight_m[3]) + ~(input_m[9]^weight_m[4]) + ~(input_m[10]^weight_m[5])
+                        + ~(input_m[12]^weight_m[6]) + ~(input_m[13]^weight_m[7]) + ~(input_m[14]^weight_m[8]);
 
-    result3 = ~(input_m[4]^weight_m[0]) + ~(input_m[5]^weight_m[1]) + ~(input_m[6]^weight_m[2])
-           + ~(input_m[8]^weight_m[3]) + ~(input_m[9]^weight_m[4]) + ~(input_m[10]^weight_m[5])
-           + ~(input_m[12]^weight_m[6]) + ~(input_m[13]^weight_m[7]) + ~(input_m[14]^weight_m[8]);
+                    result4 = ~(input_m[5]^weight_m[0]) + ~(input_m[6]^weight_m[1]) + ~(input_m[7]^weight_m[2])
+                        + ~(input_m[9]^weight_m[3]) + ~(input_m[10]^weight_m[4]) + ~(input_m[11]^weight_m[5])
+                        + ~(input_m[13]^weight_m[6]) + ~(input_m[14]^weight_m[7]) + ~(input_m[15]^weight_m[8]);
 
-    result4 = ~(input_m[5]^weight_m[0]) + ~(input_m[6]^weight_m[1]) + ~(input_m[7]^weight_m[2])
-           + ~(input_m[9]^weight_m[3]) + ~(input_m[10]^weight_m[4]) + ~(input_m[11]^weight_m[5])
-           + ~(input_m[13]^weight_m[6]) + ~(input_m[14]^weight_m[7]) + ~(input_m[15]^weight_m[8]);
+                    next <= 2'b10;
+                        end
+                2'b10 : begin
+                    if(result1>=5)
+                        result1 = 1'b1;
+                    else
+                        result1 = 1'b0;
 
-    if(result1>=5)
-        result1 = 1'b1;
-    else
-        result1 = 1'b0;
+                    if(result2>=5)
+                        result2 = 1'b1;
+                    else
+                        result2 = 1'b0;
 
-    if(result2>=5)
-        result2 = 1'b1;
-    else
-        result2 = 1'b0;
+                    if(result3>=5)
+                        result3 = 1'b1;
+                    else
+                        result3 = 1'b0;
 
-    if(result3>=5)
-        result3 = 1'b1;
-    else
-        result3 = 1'b0;
+                    if(result4>=5)
+                        result4 = 1'b1;
+                    else
+                        result4 = 1'b0;
 
-    if(result4>=5)
-        result4 = 1'b1;
-    else
-        result4 = 1'b0;
-
-    dut_sram_write_enable = 1'b1;
-    dut_sram_write_address = 1'b0;
-    dut_sram_write_data = {12'b0, result1, result2, result3, result4};
-	dut_busy = 0;
-    end
+                    next <= 2'b11;
+                        end
+                2'b11 : begin
+                    dut_sram_write_enable = 1'b1;
+                    dut_sram_write_address = 0;
+                    dut_sram_write_data = {12'b0, result1, result2, result3, result4};
+                    dut_busy = 0;
+                    next <= 2'b00;
+                        end
+            endcase
+        end
 endmodule

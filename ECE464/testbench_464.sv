@@ -1,5 +1,5 @@
-`include "sram.sv"
-`include "mydesign.v"
+
+
 module tb_top();
 
 
@@ -140,6 +140,8 @@ module tb_top();
          if(j!=0) wait(checkFinish[j-1]);
          input_mem.loadInitFile($sformatf("input_%0d/input_sram.dat",j));
          weight_mem.loadInitFile($sformatf("input_%0d/weight_sram.dat",j));
+         // input_mem.loadInitFile($sformatf("input_sram.dat"));
+         // weight_mem.loadInitFile($sformatf("weight_sram.dat"));
 			
 		repeat(5) @(posedge clk);
 		wait(dut_busy==0);
