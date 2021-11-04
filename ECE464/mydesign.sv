@@ -46,12 +46,13 @@ always @(posedge clk)
     if(!reset_b)
         begin
             dut_busy <= 0;
-            dut_sram_write_enable <= 1'b0;
-            dut_sram_write_address <= 12'b0;
-            dut_sram_write_data <= 16'b0;
+            // dut_sram_write_enable <= 1'b0;
+            // dut_sram_write_address <= 12'b0;
+            // dut_sram_write_data <= 16'b0;
 
-            dut_wmem_read_address = 0;
-            dut_sram_read_address = 0;
+            dut_wmem_read_address <= 4'b0;
+            dut_sram_read_address <= 4'b0;
+
         end
     else
         begin
@@ -62,10 +63,10 @@ always @(posedge clk)
         end
     end
 
-always @(dut_busy)
+always @(*)
     begin
-    input_m = sram_dut_read_data;
-    weight_m = wmem_dut_read_data;
+        input_m <= sram_dut_read_data;
+        weight_m <= wmem_dut_read_data;
 
     // result1 = ~((input_m[0]^weight_m[0]) + (input_m[1]^weight_m[1]) + (input_m[2]^weight_m[2])
     //        + (input_m[4]^weight_m[3]) + (input_m[5]^weight_m[4]) + (input_m[6]^weight_m[5])
@@ -102,7 +103,7 @@ always @(dut_busy)
     //     result4 = 1'b1;
     // else
     //     result4 = 1'b0;
-    //
+
     // dut_sram_write_enable = 1'b1;
     // dut_sram_write_address = 1'b0;
     // dut_sram_write_data = {12'b0, result1, result2, result3, result4};
