@@ -1,3 +1,13 @@
+//=======================================================================//
+//
+//                       Single Stage
+//          Binary Artifical Convolutional Neural Network
+//                       Grant Edwards
+//
+//=======================================================================//
+// This design takes in a 4x4 input matrix, and a 3x3 weight matrix, and
+// performs a strided convolution between them, and outputs the results.
+//=======================================================================//
 module MyDesign (dut_run,
                 dut_busy,
                 reset_b,
@@ -11,7 +21,7 @@ module MyDesign (dut_run,
                 wmem_dut_read_data
                 );
 
-//======================================================================//
+//====================External and Declared Values=======================//
 
 input dut_run;
 output reg dut_busy;
@@ -28,69 +38,90 @@ output reg [11:0] dut_wmem_read_address;
 input [15:0] sram_dut_read_data;
 input [15:0] wmem_dut_read_data;
 
-reg [15:0] input_m;
-reg [15:7] weight_m;
+//==========================Internal Values=============================//
+
 reg [3:0] result1;
 reg [3:0] result2;
 reg [3:0] result3;
 reg [3:0] result4;
-
 reg flag;
 
 
-
-
-//======================================================================//
+//=============================Main Code================================//
 
 always @(posedge clk)
     begin
-    if(flag)
+
+    if(flag) //this is used to provide logic participation with the testbench
         begin
             dut_busy <=0;
             dut_sram_write_enable <= 1'b0;
         end
-    if(!reset_b)
+
+    if(!reset_b) // within the segments of reset_b being inactive, all things are initialized to the correct addresses and busy is set to 0 to prep for convolution.
         begin
             dut_busy <= 0;
             dut_sram_write_enable <= 1'b0;
             dut_wmem_read_address = 4'b0;
             dut_sram_read_address = 4'b0;
-
         end
-    else
-        begin
-            if(dut_run)
-                begin
-                dut_busy <=1;
-                end
-        end
+    else    // If it is found to be within the convolution calculation and write stage, dut_busy will be 1
+            if(dut_run) dut_busy <=1;
 
-    input_m <= sram_dut_read_data;
-    weight_m <= wmem_dut_read_data;
+// Perform convolution with input datastream of fixed size of 4x4 matrix
+// Leading zeroes were required to provide proper adder functionality without leading ones.
 
-    result1 <= {3'b0, (input_m[0]~^ weight_m[7])} + {3'b0, (input_m[1]~^weight_m[8])} + {3'b0, (input_m[2]~^weight_m[9])}
-           + {3'b0, (input_m[4]~^weight_m[10])} + {3'b0, (input_m[5]~^weight_m[11])} + {3'b0, (input_m[6]~^weight_m[12])}
-           + {3'b0, (input_m[8]~^weight_m[13])} + {3'b0, (input_m[9]~^weight_m[14])} + {3'b0, (input_m[10]~^weight_m[15])};
+    // A basic overview of the logic is an XNOR is used to evaluate -1 and 1 within calculations. You can have the same mathematical functionality by using XNOR
+    //
+    //    since XNOR
+    //  A    B   |  D
+    //  0    0   |  1
+    //  0    1   |  0
+    //  1    0   |  0
+    //  1    1   |  1
+    //
 
-    result2 <= {3'b0, (input_m[1]~^weight_m[7])} + {3'b0, (input_m[2]~^weight_m[8])} + {3'b0, (input_m[3]~^weight_m[9])}
-           + {3'b0, (input_m[5]~^weight_m[10])} + {3'b0, (input_m[6]~^weight_m[11])} + {3'b0, (input_m[7]~^weight_m[12])}
-           + {3'b0, (input_m[9]~^weight_m[13])} + {3'b0, (input_m[10]~^weight_m[14])} + {3'b0, (input_m[11]~^weight_m[15])};
+// You can see it can provide for ++ (1), -+ (0), +- (0), and -- (1) situations with values. Mathematically, you can see the accumulation of these values can indicate a positive or negative
+// Which indicates the correct convolution result at each stage.
 
-    result3 <= {3'b0, (input_m[4]~^weight_m[7])} + {3'b0, (input_m[5]~^weight_m[8])} + {3'b0, (input_m[6]~^weight_m[9])}
-           + {3'b0, (input_m[8]~^weight_m[10])} + {3'b0, (input_m[9]~^weight_m[11])} + {3'b0, (input_m[10]~^weight_m[12])}
-           + {3'b0, (input_m[12]~^weight_m[13])} + {3'b0, (input_m[13]~^weight_m[14])} + {3'b0, (input_m[14]~^weight_m[15])};
+    result1 <= {3'b0, (sram_dut_read_data[0]~^ wmem_dut_read_data[0])} + {3'b0, (sram_dut_read_data[1]~^wmem_dut_read_data[1])} + {3'b0, (sram_dut_read_data[2]~^wmem_dut_read_data[2])}
+           + {3'b0, (sram_dut_read_data[4]~^wmem_dut_read_data[3])} + {3'b0, (sram_dut_read_data[5]~^wmem_dut_read_data[4])} + {3'b0, (sram_dut_read_data[6]~^wmem_dut_read_data[5])}
+           + {3'b0, (sram_dut_read_data[8]~^wmem_dut_read_data[6])} + {3'b0, (sram_dut_read_data[9]~^wmem_dut_read_data[7])} + {3'b0, (sram_dut_read_data[10]~^wmem_dut_read_data[8])};
 
-    result4 <= {3'b0, (input_m[5]~^weight_m[7])} + {3'b0, (input_m[6]~^weight_m[8])} + {3'b0, (input_m[7]~^weight_m[9])}
-           + {3'b0, (input_m[9]~^weight_m[10])} + {3'b0, (input_m[10]~^weight_m[11])} + {3'b0, (input_m[11]~^weight_m[12])}
-           + {3'b0, (input_m[13]~^weight_m[13])} + {3'b0, (input_m[14]~^weight_m[14])} + {3'b0, (input_m[15]~^weight_m[15])};
+    result2 <= {3'b0, (sram_dut_read_data[1]~^wmem_dut_read_data[0])} + {3'b0, (sram_dut_read_data[2]~^wmem_dut_read_data[1])} + {3'b0, (sram_dut_read_data[3]~^wmem_dut_read_data[2])}
+           + {3'b0, (sram_dut_read_data[5]~^wmem_dut_read_data[3])} + {3'b0, (sram_dut_read_data[6]~^wmem_dut_read_data[4])} + {3'b0, (sram_dut_read_data[7]~^wmem_dut_read_data[5])}
+           + {3'b0, (sram_dut_read_data[9]~^wmem_dut_read_data[6])} + {3'b0, (sram_dut_read_data[10]~^wmem_dut_read_data[7])} + {3'b0, (sram_dut_read_data[11]~^wmem_dut_read_data[8])};
+
+    result3 <= {3'b0, (sram_dut_read_data[4]~^wmem_dut_read_data[0])} + {3'b0, (sram_dut_read_data[5]~^wmem_dut_read_data[1])} + {3'b0, (sram_dut_read_data[6]~^wmem_dut_read_data[2])}
+           + {3'b0, (sram_dut_read_data[8]~^wmem_dut_read_data[3])} + {3'b0, (sram_dut_read_data[9]~^wmem_dut_read_data[4])} + {3'b0, (sram_dut_read_data[10]~^wmem_dut_read_data[5])}
+           + {3'b0, (sram_dut_read_data[12]~^wmem_dut_read_data[6])} + {3'b0, (sram_dut_read_data[13]~^wmem_dut_read_data[7])} + {3'b0, (sram_dut_read_data[14]~^wmem_dut_read_data[8])};
+
+    result4 <= {3'b0, (sram_dut_read_data[5]~^wmem_dut_read_data[0])} + {3'b0, (sram_dut_read_data[6]~^wmem_dut_read_data[1])} + {3'b0, (sram_dut_read_data[7]~^wmem_dut_read_data[2])}
+           + {3'b0, (sram_dut_read_data[9]~^wmem_dut_read_data[3])} + {3'b0, (sram_dut_read_data[10]~^wmem_dut_read_data[4])} + {3'b0, (sram_dut_read_data[11]~^wmem_dut_read_data[5])}
+           + {3'b0, (sram_dut_read_data[13]~^wmem_dut_read_data[6])} + {3'b0, (sram_dut_read_data[14]~^wmem_dut_read_data[7])} + {3'b0, (sram_dut_read_data[15]~^wmem_dut_read_data[8])};
+
+
+
+
+// In this seciton, we actually evaluate and write properly computed information within the outgoing data
+
+    // Functionality here relies on the accumulator function above
+    // for example:
+    // a single convolution calculation of 101 110 101 is
+    //
+    //                  1+0+1+1+1+0+1+0+1 = 6
+    //
+    //                  we treat 0 and 1 as -1 and 1
+    //                  1-1+1+1+1-1+1-1+1 = 3 (A POSITIVE NUMBER)
+    //
+    //      ***This is why we need to evaluate when the accumulator results in a number above 5
+
 
     if(dut_run)
         begin
-        dut_sram_write_enable <= 1'b1;
-        dut_sram_write_address <= 1'b0;
-
-
-            if(result1>=5)
+        dut_sram_write_enable <= 1'b1; //Enable write
+        dut_sram_write_address <= 1'b0; // set write address to 00
+            if(result1>=5)  // These if statements evaluate whether or not the XNOR adders are above 5, this determines if they're positive or negative
                 dut_sram_write_data[0] <= 1'b1;
             else
                 dut_sram_write_data[0] <= 1'b0;
@@ -110,8 +141,7 @@ always @(posedge clk)
             else
                 dut_sram_write_data[3] <= 1'b0;
 
-            flag <= 1;
+            flag <= 1;  //This is some necessary logic for the circuit to be able to stop its functionality and provide dut_busy with a 0 within the correct clock cycle
         end
-
     end
 endmodule
