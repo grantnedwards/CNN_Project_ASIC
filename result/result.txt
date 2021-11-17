@@ -1,0 +1,8 @@
+area = 351.917998
+Number of cycles = 1
+clock period = 2.87
+performance = 1010.00465
+
+extra metrics:
+slack = 0.0012 ns
+power = 98.3165 uW
