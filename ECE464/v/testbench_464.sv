@@ -1,7 +1,7 @@
 module tb_top();
 
 
-  parameter CLK_PHASE=5;
+  parameter CLK_PHASE=1.435;
   parameter ROUND=1;
   parameter ADDR_464=12'h000;
   //parameter ADDR_564=12'h01f;
